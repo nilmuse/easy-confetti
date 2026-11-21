@@ -1,17 +1,17 @@
 {
   "name": "easy-confetti",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "EasyConfetti is designed to create confetti animations and provides flexible, customisable confetti animations that can be easily integrated into a web page to create visual effects.",
-  "author": "ux-ui.pro",
+  "author": "Maxim <m@nilmuse.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ux-ui-pro/easy-confetti.git"
+    "url": "git+https://github.com/nilmuse/easy-confetti.git"
   },
   "bugs": {
-    "url": "https://github.com/ux-ui-pro/easy-confetti/issues"
+    "url": "https://github.com/nilmuse/easy-confetti/issues"
   },
-  "homepage": "https://github.com/ux-ui-pro/easy-confetti",
+  "homepage": "https://github.com/nilmuse/easy-confetti",
   "sideEffects": false,
   "type": "module",
   "packageManager": "npm@10.9.3",
