@@ -1,20 +1,11 @@
 # easy-confetti
 
-Flexible, customisable canvas confetti animations for the web.
+Launch canvas confetti from a DOM element, with control over particle size, motion, and front/back colors.
 
 [![npm](https://img.shields.io/npm/v/easy-confetti.svg?colorB=brightgreen)](https://www.npmjs.com/package/easy-confetti)
 [![NPM Downloads](https://img.shields.io/npm/dm/easy-confetti.svg?style=flat)](https://www.npmjs.com/package/easy-confetti)
 
 [Demo](https://codepen.io/ux-ui/full/NWmaVKQ)
-
----
-
-- Canvas-based confetti with front/back colour flip per particle.
-- Configurable particle count, size range, speed, gravity, and palette.
-- Sprinkles from a DOM anchor element (`#sprinkler`).
-- `sprinkle()` on demand; `destroy()` tears down canvas and observers.
-
----
 
 ## Installation
 
@@ -22,90 +13,128 @@ Flexible, customisable canvas confetti animations for the web.
 npm install easy-confetti
 ```
 
-## Quick Start
+## Quick start
 
-Add a sprinkler anchor in your markup, then create an instance:
+In a browser app with a bundler, add a button as the confetti origin:
 
 ```html
-<div id="sprinkler"></div>
+<button id="sprinkler" type="button">Celebrate</button>
 ```
+
+The library appends a canvas with `id="easy-confetti"` to `document.body`. Add this CSS to make it cover the viewport without blocking clicks:
+
+```css
+#easy-confetti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+```
+
+Run this TypeScript module after the button exists:
 
 ```ts
 import EasyConfetti from 'easy-confetti';
 
-const easyConfetti = new EasyConfetti();
+const button = document.getElementById('sprinkler');
 
-easyConfetti.sprinkle();
+if (!button) {
+  throw new Error('Sprinkler button was not found');
+}
+
+const confetti = new EasyConfetti();
+
+button.addEventListener('click', () => confetti.sprinkle());
 ```
 
-The constructor appends a full-page canvas and starts the animation loop. Call `sprinkle()` to emit a burst of particles from the sprinkler position.
+Each click emits a burst from the center of the button. Creating an instance starts the animation loop; call `confetti.destroy()` when you remove this part of the page.
 
-## Options
+## API
 
-Pass a partial options object to the constructor:
+`EasyConfetti` is the default export. `new EasyConfetti(options?)` creates the canvas, measures it, and starts the animation loop. You can supply any subset of the options below.
+
+### Options
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `particleCount` | `number` | `70` | Number of particles per `sprinkle()` call. |
+| `particleSizeRange` | `object` | See below | Width and height ranges for each particle. |
+| `initialSpeed` | `number` | `25` | Initial launch speed. |
+| `gravity` | `number` | `0.65` | Gravity applied each frame. |
+| `airResistance` | `number` | `0.08` | Air resistance factor. |
+| `maxFallSpeed` | `number` | `6` | Base cap for a particle's fall speed. |
+| `flipFrequency` | `number` | `0.017` | Controls how often particles flip between their front and back colors. |
+| `colors` | `Array<{ front: string; back: string }>` | See below | Color pairs for the two sides of a particle. |
+
+`particleSizeRange` has the shape `{ width: [number, number]; height: [number, number] }`. The default ranges and palette are:
 
 ```ts
-const easyConfetti = new EasyConfetti({
-  particleCount: 70,
+const defaults = {
   particleSizeRange: {
     width: [5, 20],
     height: [10, 18],
   },
-  initialSpeed: 25,
-  gravity: 0.65,
-  airResistance: 0.08,
-  maxFallSpeed: 6,
-  flipFrequency: 0.017,
+  colors: [
+    { front: '#FF5733', back: '#C70039' },
+    { front: '#DAF7A6', back: '#FFC300' },
+  ],
+};
+```
+
+### Methods
+
+- `sprinkle()` emits one burst from the `#sprinkler` element.
+- `destroy()` stops the animation loop, stops observing the canvas with `ResizeObserver`, and removes the canvas.
+- `init()` sets up canvas sizing, the animation loop, and the resize observer. The constructor calls it automatically; you do not need to call it after `new EasyConfetti()`.
+
+## Change colors
+
+As an alternative to the instance in Quick start, pass a palette when creating it. This example uses the same button and canvas CSS:
+
+```ts
+const confetti = new EasyConfetti({
   colors: [
     { front: '#4C9E14', back: '#30610A' },
     { front: '#CC7600', back: '#874900' },
     { front: '#FF4E44', back: '#AA302B' },
   ],
 });
+
+button.addEventListener('click', () => confetti.sprinkle());
 ```
 
-| Option              | Type                                                    | Default                                                                            | Description                                                                 |
-|:--------------------|:--------------------------------------------------------|:----------------------------------------------------------------------------------:|:----------------------------------------------------------------------------|
-| `particleCount`     | `number`                                                | `70`                                                                               | Number of confetti particles per `sprinkle()` call.                         |
-| `particleSizeRange` | `{ width: [number, number]; height: [number, number] }` | `{ width: [5, 20], height: [10, 18] }`                                             | Width and height range for each particle.                                   |
-| `initialSpeed`      | `number`                                                | `25`                                                                               | Initial launch speed of particles.                                          |
-| `gravity`           | `number`                                                | `0.65`                                                                             | Gravity applied each frame.                                                 |
-| `airResistance`     | `number`                                                | `0.08`                                                                             | Air resistance factor.                                                      |
-| `maxFallSpeed`      | `number`                                                | `6`                                                                                | Terminal fall speed cap.                                                    |
-| `flipFrequency`     | `number`                                                | `0.017`                                                                            | Frequency of front/back colour flip.                                        |
-| `colors`            | `Array<{ front: string; back: string }>`              | `[{ front: '#FF5733', back: '#C70039' }, { front: '#DAF7A6', back: '#FFC300' }]` | Colour pairs; particles flip between `front` and `back` while falling.      |
+## Repeat a burst
 
-## Methods
-
-```ts
-easyConfetti.sprinkle();
-easyConfetti.destroy();
-```
-
-- `sprinkle()` — emits one burst of particles from the `#sprinkler` element.
-- `destroy()` — stops the animation loop, disconnects `ResizeObserver`, and removes the canvas.
-
-### Repeated bursts
+Continuing with `confetti` from Quick start, emit three bursts 250 milliseconds apart:
 
 ```ts
 const sprinkleMultiple = (times: number, interval: number) => {
   let count = 0;
 
   const intervalId = setInterval(() => {
-    easyConfetti.sprinkle();
+    confetti.sprinkle();
     count++;
 
     if (count === times) {
       clearInterval(intervalId);
     }
   }, interval);
+
+  return intervalId;
 };
+
+const intervalId = sprinkleMultiple(3, 250);
 ```
 
-## Requirements
+If you remove the page before the sequence finishes, call `clearInterval(intervalId)` before `confetti.destroy()`.
 
-- A DOM element with `id="sprinkler"` must exist before constructing `EasyConfetti`.
-- Browser APIs: `canvas`, `requestAnimationFrame`, `ResizeObserver`.
+## Browser support
+
+- The `#sprinkler` element and `document.body` must exist before you create the instance.
+- The browser needs Canvas 2D, `requestAnimationFrame`, and `ResizeObserver`.
+- Canvas layout comes from your CSS; the library sets its drawing-buffer size from the rendered size.
 
 ## License
 
